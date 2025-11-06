@@ -27,6 +27,12 @@
     .link{color:var(--accent);cursor:pointer;text-decoration:underline;font-weight:600}
     .error{color:#ef4444;text-align:center;font-size:14px}
 
+    /* plans */
+    .plans{display:flex;gap:12px;margin-top:14px}
+    .plan{flex:1;padding:16px;border-radius:10px;border:1px solid #e6eef6;background:white;text-align:center;cursor:pointer}
+    .plan h4{margin:0 0 6px}
+    .plan.selected{border-color:var(--accent);box-shadow:0 6px 18px rgba(37,99,235,0.08);transform:scale(1.02)}
+
     /* dashboard (light & clear) */
     .dashboard{display:none;padding:28px;min-height:100vh;background:#f8fafc}
     .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px}
@@ -36,6 +42,7 @@
     .card-dash{background:white;padding:20px;border-radius:12px;box-shadow:var(--shadow);margin-top:18px}
 
     .grid{display:grid;grid-template-columns:1fr 320px;gap:18px;margin-top:18px}
+    .profile-row{display:flex;justify-content:space-between;align-items:center;gap:12px}
     .muted{color:var(--muted)}
     .small{font-size:13px}
 
@@ -43,12 +50,16 @@
     .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:none;align-items:center;justify-content:center;padding:20px}
     .modal{background:white;padding:18px;border-radius:12px;max-width:520px;width:100%;box-shadow:var(--shadow)}
 
-    @media (max-width:900px){.grid{grid-template-columns:1fr}}
+    /* responsive */
+    @media (max-width:900px){
+      .grid{grid-template-columns:1fr}
+      .card{max-width:520px}
+    }
   </style>
 </head>
 <body>
 
-  <!-- AUTH STAGE -->
+  <!-- ========== AUTH STAGE (signin/signup/plan) ========== -->
   <div class="stage" id="authStage">
 
     <!-- Sign In Card -->
@@ -79,12 +90,28 @@
         <button type="submit">Create account</button>
       </form>
       <p style="text-align:center;margin-top:12px">Already registered? <span class="link" onclick="showSignin()">Sign in</span></p>
-      <div class="error" id="signupMsg" style="text-align:center;margin-top:8px;color:#22c55e"></div>
+    </div>
+
+    <!-- Plan selection after signup -->
+    <div class="card" id="planCard" style="display:none">
+      <h2>Choose a plan</h2>
+      <p class="muted">Select the version you want to use.</p>
+      <div class="plans">
+        <div class="plan" id="planFree" onclick="choosePlan('Free')">
+          <h4>Free</h4>
+          <p class="small muted">Basic access</p>
+        </div>
+        <div class="plan" id="planPaid" onclick="choosePlan('Paid')">
+          <h4>Paid</h4>
+          <p class="small muted">Premium features</p>
+        </div>
+      </div>
+      <p style="text-align:center;margin-top:12px"><span class="link" onclick="backToSignup()">Back</span></p>
     </div>
 
   </div>
 
-  <!-- DASHBOARD -->
+  <!-- ========== DASHBOARD ========== -->
   <div class="dashboard" id="dashboard">
     <div class="topbar">
       <div class="brand">
@@ -116,9 +143,19 @@
               <div id="profileSince" style="font-weight:700">-</div>
             </div>
           </div>
+
           <div style="margin-top:16px">
             <h4 style="margin:0 0 8px">About</h4>
             <p class="muted small" id="profileAbout">This is your dashboard. Use Edit Profile to change your name or password, or Change Plan to switch between Free and Paid.</p>
+          </div>
+        </div>
+
+        <div class="card-dash" style="margin-top:16px">
+          <h4 style="margin:0 0 8px">Quick actions</h4>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button onclick="openEditProfile()" style="padding:8px 12px;border-radius:8px;border:1px solid #eef2ff;background:white;cursor:pointer">Edit Profile</button>
+            <button onclick="openChangePlan()" style="padding:8px 12px;border-radius:8px;border:1px solid #eef2ff;background:white;cursor:pointer">Change Plan</button>
+            <button onclick="logout()" style="padding:8px 12px;border-radius:8px;background:#fff;color:#111;border:1px solid #eee;cursor:pointer">Logout</button>
           </div>
         </div>
       </div>
@@ -132,92 +169,218 @@
             <div style="margin-bottom:8px"><strong>Member since:</strong> <span id="asideSince">-</span></div>
           </div>
         </div>
+
+        <div class="card-dash" style="margin-top:12px">
+          <h4 style="margin:0 0 8px">Support</h4>
+          <p class="muted small">Need help? Contact support@example.com</p>
+        </div>
       </aside>
     </div>
   </div>
 
-  <!-- MODALS -->
+  <!-- ========== MODALS ========== -->
   <div class="modal-backdrop" id="modalBackdrop">
-    <div class="modal" id="modalContent"></div>
+    <div class="modal" id="modalContent">
+      <!-- dynamic content inserted here -->
+    </div>
   </div>
 
   <script>
-    const ACC_KEY = 'awesome_accounts_v2';
-    let accounts = JSON.parse(localStorage.getItem(ACC_KEY)||'[]');
-    if(accounts.length===0){
-      const demo = [
-        {name:'Demo User', email:'user1@gmail.com', password:'demo123', plan:'Free', created:new Date().toISOString()},
-        {name:'Tester', email:'test@gmail.com', password:'demo123', plan:'Paid', created:new Date().toISOString()}
-      ];
-      accounts = demo; localStorage.setItem(ACC_KEY, JSON.stringify(accounts));
+    // ========== Utility: localStorage accounts ==========
+    const ACC_KEY = 'awesome_accounts_v1';
+    function loadAccounts(){
+      const raw = localStorage.getItem(ACC_KEY);
+      if(!raw){
+        // seed with two demo accounts (password: demo123)
+        const demo = [
+          {name:'Demo User', email:'user1@gmail.com', password:'demo123', plan:'Free', created: new Date().toISOString()},
+          {name:'Tester', email:'test@gmail.com', password:'demo123', plan:'Paid', created: new Date().toISOString()}
+        ];
+        localStorage.setItem(ACC_KEY, JSON.stringify(demo));
+        return demo;
+      }
+      try{return JSON.parse(raw)||[]}catch(e){return []}
     }
-    let currentUser = null;
+    function saveAccounts(acc){ localStorage.setItem(ACC_KEY, JSON.stringify(acc)); }
 
+    let accounts = loadAccounts();
+    let currentUser = null; // will hold the logged-in user's email
+
+    // ========== Show/Hide views ==========
     function showSignin(){
-      document.getElementById('authStage').style.display='flex';
-      document.getElementById('signinCard').style.display='block';
-      document.getElementById('signupCard').style.display='none';
-      document.getElementById('dashboard').style.display='none';
-      document.getElementById('signinError').textContent='';
-      document.getElementById('signupMsg').textContent='';
+      document.getElementById('authStage').style.display = 'flex';
+      document.getElementById('signinCard').style.display = 'block';
+      document.getElementById('signupCard').style.display = 'none';
+      document.getElementById('planCard').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'none';
+      document.getElementById('signinError').textContent = '';
     }
-
     function showSignup(){
-      document.getElementById('authStage').style.display='flex';
-      document.getElementById('signinCard').style.display='none';
-      document.getElementById('signupCard').style.display='block';
-      document.getElementById('dashboard').style.display='none';
-      document.getElementById('signinError').textContent='';
-      document.getElementById('signupMsg').textContent='';
+      document.getElementById('authStage').style.display = 'flex';
+      document.getElementById('signinCard').style.display = 'none';
+      document.getElementById('signupCard').style.display = 'block';
+      document.getElementById('planCard').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'none';
+    }
+    function showPlanFor(email){
+      document.getElementById('authStage').style.display = 'flex';
+      document.getElementById('signinCard').style.display = 'none';
+      document.getElementById('signupCard').style.display = 'none';
+      document.getElementById('planCard').style.display = 'block';
+      document.getElementById('dashboard').style.display = 'none';
+      // store temp signup email for plan selection
+      sessionStorage.setItem('pendingSignup', email);
     }
 
+    function showDashboard(email){
+      currentUser = email;
+      accounts = loadAccounts();
+      const acc = accounts.find(a => a.email === email);
+      if(!acc) return showSignin();
+
+      document.getElementById('authStage').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      // populate dashboard
+      document.getElementById('dashWelcome').textContent = `Welcome, ${acc.name}!`;
+      document.getElementById('dashEmail').textContent = acc.email;
+      document.getElementById('profileName').textContent = acc.name;
+      document.getElementById('profileEmail').textContent = acc.email;
+      document.getElementById('profilePlan').textContent = acc.plan || 'Free';
+      document.getElementById('profileSince').textContent = new Date(acc.created).toLocaleDateString();
+      document.getElementById('asideEmail').textContent = acc.email;
+      document.getElementById('asidePlan').textContent = acc.plan || 'Free';
+      document.getElementById('asideSince').textContent = new Date(acc.created).toLocaleDateString();
+    }
+
+    // ========== Handlers ==========
     function signinHandler(form){
-      const email=form.email.value.trim().toLowerCase();
-      const pwd=form.password.value;
-      const err=document.getElementById('signinError');
-      const acc=accounts.find(a=>a.email===email);
-      if(!acc){err.textContent='Invalid Gmail. Please sign up first.'; return;}
-      if(acc.password!==pwd){err.textContent='Incorrect password.'; return;}
-      currentUser=email;
-      sessionStorage.setItem('currentUser', email);
+      const email = form.email.value.trim().toLowerCase();
+      const pwd = form.password.value;
+      const err = document.getElementById('signinError');
+      err.textContent = '';
+
+      const acc = accounts.find(a => a.email === email);
+      if(!acc){ err.textContent = 'Invalid Gmail. Please sign up first.'; return; }
+      if(acc.password !== pwd){ err.textContent = 'Incorrect password.'; return; }
+      // success
+      form.reset();
       showDashboard(email);
     }
 
     function signupHandler(form){
-      const name=form.name.value.trim();
-      const email=form.email.value.trim().toLowerCase();
-      const pwd=form.password.value;
-      if(accounts.some(a=>a.email===email)){alert('Email already registered. Please sign in.'); showSignin(); return;}
-      accounts.push({name,email,password:pwd,plan:'Free',created:new Date().toISOString()});
-      localStorage.setItem(ACC_KEY, JSON.stringify(accounts));
+      const name = form.name.value.trim();
+      const email = form.email.value.trim().toLowerCase();
+      const pwd = form.password.value;
+
+      if(accounts.some(a => a.email === email)){
+        alert('This Gmail is already registered. Please sign in.');
+        showSignin();
+        return;
+      }
+      const newAcc = {name, email, password: pwd, plan: 'Free', created: new Date().toISOString()};
+      accounts.push(newAcc);
+      saveAccounts(accounts);
       form.reset();
-      document.getElementById('signupMsg').textContent='Account created successfully! Please sign in.';
+      // show plan selection after signup
+      showPlanFor(email);
     }
 
-    function showDashboard(email){
-      const acc=accounts.find(a=>a.email===email); if(!acc)return showSignin();
-      document.getElementById('authStage').style.display='none';
-      document.getElementById('dashboard').style.display='block';
-      document.getElementById('dashWelcome').textContent=`Welcome, ${acc.name}!`;
-      document.getElementById('dashEmail').textContent=acc.email;
-      document.getElementById('profileName').textContent=acc.name;
-      document.getElementById('profileEmail').textContent=acc.email;
-      document.getElementById('profilePlan').textContent=acc.plan;
-      document.getElementById('profileSince').textContent=new Date(acc.created).toLocaleDateString();
-      document.getElementById('asideEmail').textContent=acc.email;
-      document.getElementById('asidePlan').textContent=acc.plan;
-      document.getElementById('asideSince').textContent=new Date(acc.created).toLocaleDateString();
+    function choosePlan(chosen){
+      const email = sessionStorage.getItem('pendingSignup');
+      if(!email) return alert('No signup in progress.');
+      const idx = accounts.findIndex(a => a.email === email);
+      if(idx === -1) return alert('Account not found (unexpected).');
+      accounts[idx].plan = chosen;
+      saveAccounts(accounts);
+      sessionStorage.removeItem('pendingSignup');
+      // go to dashboard
+      showDashboard(email);
     }
 
-    function logout(){currentUser=null; sessionStorage.removeItem('currentUser'); showSignin();}
+    // ========== Dashboard actions (modals) ==========
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    const modalContent = document.getElementById('modalContent');
 
-    // check session on load
-    document.addEventListener('DOMContentLoaded',()=>{
-      const s=sessionStorage.getItem('currentUser');
-      if(s && accounts.some(a=>a.email===s)){currentUser=s; showDashboard(s);} else showSignin();
+    function openEditProfile(){
+      if(!currentUser) return;
+      const acc = accounts.find(a=>a.email===currentUser);
+      modalContent.innerHTML = `
+        <h3>Edit Profile</h3>
+        <p class="muted">Change your name or password.</p>
+        <form onsubmit="event.preventDefault(); submitEditProfile(this)">
+          <input name="name" value="${escapeHtml(acc.name)}" required />
+          <input name="password" type="password" placeholder="New password (leave blank to keep)" />
+          <div style=\"display:flex;gap:8px;margin-top:12px\">
+            <button type=\"submit\">Save</button>
+            <button type=\"button\" onclick=\"closeModal()\" style=\"background:#eef2ff;color:#111;\">Cancel</button>
+          </div>
+        </form>
+      `;
+      openModal();
+    }
+
+    function submitEditProfile(form){
+      const name = form.name.value.trim();
+      const pwd = form.password.value;
+      const idx = accounts.findIndex(a=>a.email===currentUser);
+      if(idx===-1) return alert('Account not found');
+      accounts[idx].name = name || accounts[idx].name;
+      if(pwd) accounts[idx].password = pwd;
+      saveAccounts(accounts);
+      closeModal();
+      showDashboard(currentUser);
+      alert('Profile updated');
+    }
+
+    function openChangePlan(){
+      if(!currentUser) return;
+      modalContent.innerHTML = `
+        <h3>Change Plan</h3>
+        <p class="muted">Choose a new plan for your account.</p>
+        <div style=\"display:flex;gap:10px;margin-top:12px\">
+          <div class=\"plan\" onclick=\"applyPlan('Free')\">Free</div>
+          <div class=\"plan\" onclick=\"applyPlan('Paid')\">Paid</div>
+        </div>
+        <div style=\"margin-top:12px;text-align:right\"><button onclick=\"closeModal()\" style=\"background:#eef2ff;color:#111;\">Close</button></div>
+      `;
+      openModal();
+    }
+
+    function applyPlan(plan){
+      const idx = accounts.findIndex(a=>a.email===currentUser);
+      if(idx===-1) return alert('Account not found');
+      accounts[idx].plan = plan;
+      saveAccounts(accounts);
+      closeModal();
+      showDashboard(currentUser);
+      alert('Plan updated to ' + plan);
+    }
+
+    function openModal(){ modalBackdrop.style.display = 'flex'; }
+    function closeModal(){ modalBackdrop.style.display = 'none'; modalContent.innerHTML=''; }
+    modalBackdrop.addEventListener('click', (e)=>{ if(e.target===modalBackdrop) closeModal(); });
+
+    function logout(){ currentUser = null; showSignin(); }
+
+    function backToSignup(){ showSignup(); }
+
+    // small helper
+    function escapeHtml(str){ return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    // check if already logged in (session) - optional: use sessionStorage
+    document.addEventListener('DOMContentLoaded', ()=>{
+      // if session indicates user, show dashboard
+      const s = sessionStorage.getItem('currentUser');
+      if(s && accounts.some(a=>a.email===s)){
+        showDashboard(s);
+        currentUser = s;
+      } else showSignin();
     });
 
-    // Modal and dashboard edit/change plan functions remain unchanged
-    const modalBackdrop=document.getElementById('modalBackdrop');
-    const modalContent=document.getElementById('modalContent');
-    function openEditProfile(){if(!currentUser)return; const acc=accounts.find(a=>a.email===currentUser); modalContent.innerHTML=`<h3>Edit Profile</h3><p class="muted">Change your name or password.</p><form onsubmit="event.preventDefault(); submitEditProfile(this)"><input name="name" value="${acc.name}"
+    // store session currentUser when showing dashboard
+    const originalShowDashboard = showDashboard;
+    showDashboard = function(email){ sessionStorage.setItem('currentUser', email); originalShowDashboard(email); };
+
+  </script>
+</body>
+</html>
