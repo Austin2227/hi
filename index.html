@@ -3,20 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Auth + Dashboard — Awesome Site</title>
+  <title>Auth + Dashboard — GitHub Ready</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root{
-      --accent:#2563eb; /* blue */
-      --accent-2:#06b6d4; /* teal */
-      --muted:#6b7280;
-      --card-radius:12px;
-      --shadow: 0 8px 30px rgba(16,24,40,0.08);
-    }
+    :root{--accent:#2563eb;--accent-2:#06b6d4;--muted:#6b7280;--shadow:0 8px 30px rgba(16,24,40,0.08)}
     *{box-sizing:border-box}
     body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;background:#f3f7fb;margin:0;min-height:100vh;color:#0f1724}
-
-    /* centered container for auth cards */
     .stage{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
     .card{background:linear-gradient(135deg,#eef2ff,#ffffff);padding:28px;border-radius:14px;box-shadow:var(--shadow);max-width:420px;width:100%}
     h2{text-align:center;margin:0 0 12px;font-size:22px}
@@ -26,361 +18,111 @@
     button{padding:12px;border-radius:10px;border:none;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;font-weight:700;cursor:pointer}
     .link{color:var(--accent);cursor:pointer;text-decoration:underline;font-weight:600}
     .error{color:#ef4444;text-align:center;font-size:14px}
-
-    /* plans */
-    .plans{display:flex;gap:12px;margin-top:14px}
-    .plan{flex:1;padding:16px;border-radius:10px;border:1px solid #e6eef6;background:white;text-align:center;cursor:pointer}
-    .plan h4{margin:0 0 6px}
-    .plan.selected{border-color:var(--accent);box-shadow:0 6px 18px rgba(37,99,235,0.08);transform:scale(1.02)}
-
-    /* dashboard (light & clear) */
     .dashboard{display:none;padding:28px;min-height:100vh;background:#f8fafc}
     .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px}
     .brand{display:flex;align-items:center;gap:12px}
     .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(90deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:white;font-weight:800}
     .welcome{font-size:18px;font-weight:700}
     .card-dash{background:white;padding:20px;border-radius:12px;box-shadow:var(--shadow);margin-top:18px}
-
     .grid{display:grid;grid-template-columns:1fr 320px;gap:18px;margin-top:18px}
-    .profile-row{display:flex;justify-content:space-between;align-items:center;gap:12px}
     .muted{color:var(--muted)}
     .small{font-size:13px}
-
-    /* modal */
     .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:none;align-items:center;justify-content:center;padding:20px}
     .modal{background:white;padding:18px;border-radius:12px;max-width:520px;width:100%;box-shadow:var(--shadow)}
-
-    /* responsive */
-    @media (max-width:900px){
-      .grid{grid-template-columns:1fr}
-      .card{max-width:520px}
-    }
+    @media (max-width:900px){.grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
 
-  <!-- ========== AUTH STAGE (signin/signup/plan) ========== -->
-  <div class="stage" id="authStage">
-
-    <!-- Sign In Card -->
-    <div class="card" id="signinCard">
-      <h2>Sign In</h2>
-      <p class="muted">Use your Gmail to sign in.</p>
-      <form onsubmit="event.preventDefault(); signinHandler(this)">
-        <input type="email" name="email" placeholder="Gmail address" required />
-        <input type="password" name="password" placeholder="Password" required />
-        <div class="error" id="signinError"></div>
-        <button type="submit">Sign In</button>
-      </form>
-      <p style="text-align:center;margin-top:12px">Don't have an account? <span class="link" onclick="showSignup()">Sign up</span></p>
-    </div>
-
-    <!-- Sign Up Card -->
-    <div class="card" id="signupCard" style="display:none">
-      <h2>Create Account</h2>
-      <p class="muted">Sign up with your Gmail and a secure password.</p>
-      <form onsubmit="event.preventDefault(); signupHandler(this)">
-        <input type="text" name="name" placeholder="Full name" required />
-        <input type="email" name="email" placeholder="Gmail address" required />
-        <input type="password" name="password" placeholder="Password" required />
-        <div style="display:flex;gap:10px;align-items:center;margin-top:8px">
-          <input id="tos" type="checkbox" required />
-          <label for="tos" class="small muted">I agree to the terms</label>
-        </div>
-        <button type="submit">Create account</button>
-      </form>
-      <p style="text-align:center;margin-top:12px">Already registered? <span class="link" onclick="showSignin()">Sign in</span></p>
-    </div>
-
-    <!-- Plan selection after signup -->
-    <div class="card" id="planCard" style="display:none">
-      <h2>Choose a plan</h2>
-      <p class="muted">Select the version you want to use.</p>
-      <div class="plans">
-        <div class="plan" id="planFree" onclick="choosePlan('Free')">
-          <h4>Free</h4>
-          <p class="small muted">Basic access</p>
-        </div>
-        <div class="plan" id="planPaid" onclick="choosePlan('Paid')">
-          <h4>Paid</h4>
-          <p class="small muted">Premium features</p>
-        </div>
-      </div>
-      <p style="text-align:center;margin-top:12px"><span class="link" onclick="backToSignup()">Back</span></p>
-    </div>
-
+<div class="stage" id="authStage">
+  <div class="card" id="signinCard">
+    <h2>Sign In</h2>
+    <p class="muted">Use your Gmail to sign in.</p>
+    <form onsubmit="event.preventDefault(); signinHandler(this)">
+      <input type="email" name="email" placeholder="Gmail address" required />
+      <input type="password" name="password" placeholder="Password" required />
+      <div class="error" id="signinError"></div>
+      <button type="submit">Sign In</button>
+    </form>
+    <p style="text-align:center;margin-top:12px">Don't have an account? <span class="link" onclick="showSignup()">Sign up</span></p>
   </div>
 
-  <!-- ========== DASHBOARD ========== -->
-  <div class="dashboard" id="dashboard">
-    <div class="topbar">
-      <div class="brand">
-        <div class="logo">AS</div>
-        <div>
-          <div class="welcome" id="dashWelcome">Welcome, User!</div>
-          <div class="muted small" id="dashEmail">user@example.com</div>
-        </div>
+  <div class="card" id="signupCard" style="display:none">
+    <h2>Create Account</h2>
+    <p class="muted">Sign up with your Gmail and a secure password.</p>
+    <form onsubmit="event.preventDefault(); signupHandler(this)">
+      <input type="text" name="name" placeholder="Full name" required />
+      <input type="email" name="email" placeholder="Gmail address" required />
+      <input type="password" name="password" placeholder="Password" required />
+      <div style="display:flex;gap:10px;align-items:center;margin-top:8px">
+        <input id="tos" type="checkbox" required />
+        <label for="tos" class="small muted">I agree to the terms</label>
       </div>
-      <div style="display:flex;gap:12px;align-items:center">
-        <button onclick="openChangePlan()" style="background:transparent;border:1px solid #e6eef6;padding:8px 12px;border-radius:10px;cursor:pointer">Change Plan</button>
-        <button onclick="openEditProfile()" style="background:transparent;border:1px solid #e6eef6;padding:8px 12px;border-radius:10px;cursor:pointer">Edit Profile</button>
-        <button onclick="logout()" style="background:linear-gradient(90deg,var(--accent),var(--accent-2));border:none;padding:10px 12px;border-radius:10px;color:white;cursor:pointer">Logout</button>
-      </div>
-    </div>
+      <button type="submit">Create account</button>
+    </form>
+    <p style="text-align:center;margin-top:12px">Already registered? <span class="link" onclick="showSignin()">Sign in</span></p>
+    <div class="error" id="signupMsg" style="text-align:center;margin-top:8px;color:#22c55e"></div>
+  </div>
+</div>
 
-    <div class="grid">
+<div class="dashboard" id="dashboard">
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo">AS</div>
       <div>
-        <div class="card-dash">
-          <h3 id="profileName">User Name</h3>
-          <p class="muted small" id="profileEmail">user@example.com</p>
-          <div style="margin-top:12px;display:flex;gap:12px">
-            <div style="padding:12px;border-radius:10px;border:1px solid #eef2ff;background:#ffffff;min-width:140px">
-              <div class="small muted">Plan</div>
-              <div id="profilePlan" style="font-weight:700">Free</div>
-            </div>
-            <div style="padding:12px;border-radius:10px;border:1px solid #eef2ff;background:#ffffff;min-width:140px">
-              <div class="small muted">Member since</div>
-              <div id="profileSince" style="font-weight:700">-</div>
-            </div>
-          </div>
-
-          <div style="margin-top:16px">
-            <h4 style="margin:0 0 8px">About</h4>
-            <p class="muted small" id="profileAbout">This is your dashboard. Use Edit Profile to change your name or password, or Change Plan to switch between Free and Paid.</p>
-          </div>
-        </div>
-
-        <div class="card-dash" style="margin-top:16px">
-          <h4 style="margin:0 0 8px">Quick actions</h4>
-          <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <button onclick="openEditProfile()" style="padding:8px 12px;border-radius:8px;border:1px solid #eef2ff;background:white;cursor:pointer">Edit Profile</button>
-            <button onclick="openChangePlan()" style="padding:8px 12px;border-radius:8px;border:1px solid #eef2ff;background:white;cursor:pointer">Change Plan</button>
-            <button onclick="logout()" style="padding:8px 12px;border-radius:8px;background:#fff;color:#111;border:1px solid #eee;cursor:pointer">Logout</button>
-          </div>
-        </div>
+        <div class="welcome" id="dashWelcome">Welcome, User!</div>
+        <div class="muted small" id="dashEmail">user@example.com</div>
       </div>
-
-      <aside>
-        <div class="card-dash">
-          <h4 style="margin:0 0 8px">Account details</h4>
-          <div style="font-size:14px;color:var(--muted);">
-            <div style="margin-bottom:8px"><strong>Gmail:</strong> <span id="asideEmail">-</span></div>
-            <div style="margin-bottom:8px"><strong>Plan:</strong> <span id="asidePlan">-</span></div>
-            <div style="margin-bottom:8px"><strong>Member since:</strong> <span id="asideSince">-</span></div>
-          </div>
-        </div>
-
-        <div class="card-dash" style="margin-top:12px">
-          <h4 style="margin:0 0 8px">Support</h4>
-          <p class="muted small">Need help? Contact support@example.com</p>
-        </div>
-      </aside>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center">
+      <button onclick="openChangePlan()" style="background:transparent;border:1px solid #e6eef6;padding:8px 12px;border-radius:10px;cursor:pointer">Change Plan</button>
+      <button onclick="openEditProfile()" style="background:transparent;border:1px solid #e6eef6;padding:8px 12px;border-radius:10px;cursor:pointer">Edit Profile</button>
+      <button onclick="logout()" style="background:linear-gradient(90deg,var(--accent),var(--accent-2));border:none;padding:10px 12px;border-radius:10px;color:white;cursor:pointer">Logout</button>
     </div>
   </div>
+</div>
 
-  <!-- ========== MODALS ========== -->
-  <div class="modal-backdrop" id="modalBackdrop">
-    <div class="modal" id="modalContent">
-      <!-- dynamic content inserted here -->
-    </div>
-  </div>
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" id="modalContent"></div>
+</div>
 
-  <script>
-    // ========== Utility: localStorage accounts ==========
-    const ACC_KEY = 'awesome_accounts_v1';
-    function loadAccounts(){
-      const raw = localStorage.getItem(ACC_KEY);
-      if(!raw){
-        // seed with two demo accounts (password: demo123)
-        const demo = [
-          {name:'Demo User', email:'user1@gmail.com', password:'demo123', plan:'Free', created: new Date().toISOString()},
-          {name:'Tester', email:'test@gmail.com', password:'demo123', plan:'Paid', created: new Date().toISOString()}
-        ];
-        localStorage.setItem(ACC_KEY, JSON.stringify(demo));
-        return demo;
-      }
-      try{return JSON.parse(raw)||[]}catch(e){return []}
-    }
-    function saveAccounts(acc){ localStorage.setItem(ACC_KEY, JSON.stringify(acc)); }
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const ACC_KEY='awesome_accounts_github';
+  let accounts=JSON.parse(localStorage.getItem(ACC_KEY)||'[]');
+  if(accounts.length===0){
+    accounts=[
+      {name:'Demo User', email:'user1@gmail.com', password:'demo123', plan:'Free', created:new Date().toISOString()},
+      {name:'Tester', email:'test@gmail.com', password:'demo123', plan:'Paid', created:new Date().toISOString()}
+    ];
+    localStorage.setItem(ACC_KEY,JSON.stringify(accounts));
+  }
+  let currentUser=null;
 
-    let accounts = loadAccounts();
-    let currentUser = null; // will hold the logged-in user's email
+  const signinCard=document.getElementById('signinCard');
+  const signupCard=document.getElementById('signupCard');
+  const dashboard=document.getElementById('dashboard');
+  const signinError=document.getElementById('signinError');
+  const signupMsg=document.getElementById('signupMsg');
 
-    // ========== Show/Hide views ==========
-    function showSignin(){
-      document.getElementById('authStage').style.display = 'flex';
-      document.getElementById('signinCard').style.display = 'block';
-      document.getElementById('signupCard').style.display = 'none';
-      document.getElementById('planCard').style.display = 'none';
-      document.getElementById('dashboard').style.display = 'none';
-      document.getElementById('signinError').textContent = '';
-    }
-    function showSignup(){
-      document.getElementById('authStage').style.display = 'flex';
-      document.getElementById('signinCard').style.display = 'none';
-      document.getElementById('signupCard').style.display = 'block';
-      document.getElementById('planCard').style.display = 'none';
-      document.getElementById('dashboard').style.display = 'none';
-    }
-    function showPlanFor(email){
-      document.getElementById('authStage').style.display = 'flex';
-      document.getElementById('signinCard').style.display = 'none';
-      document.getElementById('signupCard').style.display = 'none';
-      document.getElementById('planCard').style.display = 'block';
-      document.getElementById('dashboard').style.display = 'none';
-      // store temp signup email for plan selection
-      sessionStorage.setItem('pendingSignup', email);
-    }
+  function showSignin(){signinCard.style.display='block'; signupCard.style.display='none'; dashboard.style.display='none'; signinError.textContent=''; signupMsg.textContent='';}
+  function showSignup(){signinCard.style.display='none'; signupCard.style.display='block'; dashboard.style.display='none'; signinError.textContent=''; signupMsg.textContent='';}
 
-    function showDashboard(email){
-      currentUser = email;
-      accounts = loadAccounts();
-      const acc = accounts.find(a => a.email === email);
-      if(!acc) return showSignin();
+  window.showSignin=showSignin; window.showSignup=showSignup;
 
-      document.getElementById('authStage').style.display = 'none';
-      document.getElementById('dashboard').style.display = 'block';
-      // populate dashboard
-      document.getElementById('dashWelcome').textContent = `Welcome, ${acc.name}!`;
-      document.getElementById('dashEmail').textContent = acc.email;
-      document.getElementById('profileName').textContent = acc.name;
-      document.getElementById('profileEmail').textContent = acc.email;
-      document.getElementById('profilePlan').textContent = acc.plan || 'Free';
-      document.getElementById('profileSince').textContent = new Date(acc.created).toLocaleDateString();
-      document.getElementById('asideEmail').textContent = acc.email;
-      document.getElementById('asidePlan').textContent = acc.plan || 'Free';
-      document.getElementById('asideSince').textContent = new Date(acc.created).toLocaleDateString();
-    }
+  window.signinHandler=function(form){
+    const email=form.email.value.trim().toLowerCase();
+    const pwd=form.password.value;
+    const acc=accounts.find(a=>a.email===email);
+    if(!acc){signinError.textContent='Invalid Gmail. Please sign up first.'; return;}
+    if(acc.password!==pwd){signinError.textContent='Incorrect password.'; return;}
+    currentUser=email; sessionStorage.setItem('currentUser',email); showDashboard(acc);
+  }
 
-    // ========== Handlers ==========
-    function signinHandler(form){
-      const email = form.email.value.trim().toLowerCase();
-      const pwd = form.password.value;
-      const err = document.getElementById('signinError');
-      err.textContent = '';
-
-      const acc = accounts.find(a => a.email === email);
-      if(!acc){ err.textContent = 'Invalid Gmail. Please sign up first.'; return; }
-      if(acc.password !== pwd){ err.textContent = 'Incorrect password.'; return; }
-      // success
-      form.reset();
-      showDashboard(email);
-    }
-
-    function signupHandler(form){
-      const name = form.name.value.trim();
-      const email = form.email.value.trim().toLowerCase();
-      const pwd = form.password.value;
-
-      if(accounts.some(a => a.email === email)){
-        alert('This Gmail is already registered. Please sign in.');
-        showSignin();
-        return;
-      }
-      const newAcc = {name, email, password: pwd, plan: 'Free', created: new Date().toISOString()};
-      accounts.push(newAcc);
-      saveAccounts(accounts);
-      form.reset();
-      // show plan selection after signup
-      showPlanFor(email);
-    }
-
-    function choosePlan(chosen){
-      const email = sessionStorage.getItem('pendingSignup');
-      if(!email) return alert('No signup in progress.');
-      const idx = accounts.findIndex(a => a.email === email);
-      if(idx === -1) return alert('Account not found (unexpected).');
-      accounts[idx].plan = chosen;
-      saveAccounts(accounts);
-      sessionStorage.removeItem('pendingSignup');
-      // go to dashboard
-      showDashboard(email);
-    }
-
-    // ========== Dashboard actions (modals) ==========
-    const modalBackdrop = document.getElementById('modalBackdrop');
-    const modalContent = document.getElementById('modalContent');
-
-    function openEditProfile(){
-      if(!currentUser) return;
-      const acc = accounts.find(a=>a.email===currentUser);
-      modalContent.innerHTML = `
-        <h3>Edit Profile</h3>
-        <p class="muted">Change your name or password.</p>
-        <form onsubmit="event.preventDefault(); submitEditProfile(this)">
-          <input name="name" value="${escapeHtml(acc.name)}" required />
-          <input name="password" type="password" placeholder="New password (leave blank to keep)" />
-          <div style=\"display:flex;gap:8px;margin-top:12px\">
-            <button type=\"submit\">Save</button>
-            <button type=\"button\" onclick=\"closeModal()\" style=\"background:#eef2ff;color:#111;\">Cancel</button>
-          </div>
-        </form>
-      `;
-      openModal();
-    }
-
-    function submitEditProfile(form){
-      const name = form.name.value.trim();
-      const pwd = form.password.value;
-      const idx = accounts.findIndex(a=>a.email===currentUser);
-      if(idx===-1) return alert('Account not found');
-      accounts[idx].name = name || accounts[idx].name;
-      if(pwd) accounts[idx].password = pwd;
-      saveAccounts(accounts);
-      closeModal();
-      showDashboard(currentUser);
-      alert('Profile updated');
-    }
-
-    function openChangePlan(){
-      if(!currentUser) return;
-      modalContent.innerHTML = `
-        <h3>Change Plan</h3>
-        <p class="muted">Choose a new plan for your account.</p>
-        <div style=\"display:flex;gap:10px;margin-top:12px\">
-          <div class=\"plan\" onclick=\"applyPlan('Free')\">Free</div>
-          <div class=\"plan\" onclick=\"applyPlan('Paid')\">Paid</div>
-        </div>
-        <div style=\"margin-top:12px;text-align:right\"><button onclick=\"closeModal()\" style=\"background:#eef2ff;color:#111;\">Close</button></div>
-      `;
-      openModal();
-    }
-
-    function applyPlan(plan){
-      const idx = accounts.findIndex(a=>a.email===currentUser);
-      if(idx===-1) return alert('Account not found');
-      accounts[idx].plan = plan;
-      saveAccounts(accounts);
-      closeModal();
-      showDashboard(currentUser);
-      alert('Plan updated to ' + plan);
-    }
-
-    function openModal(){ modalBackdrop.style.display = 'flex'; }
-    function closeModal(){ modalBackdrop.style.display = 'none'; modalContent.innerHTML=''; }
-    modalBackdrop.addEventListener('click', (e)=>{ if(e.target===modalBackdrop) closeModal(); });
-
-    function logout(){ currentUser = null; showSignin(); }
-
-    function backToSignup(){ showSignup(); }
-
-    // small helper
-    function escapeHtml(str){ return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-    // check if already logged in (session) - optional: use sessionStorage
-    document.addEventListener('DOMContentLoaded', ()=>{
-      // if session indicates user, show dashboard
-      const s = sessionStorage.getItem('currentUser');
-      if(s && accounts.some(a=>a.email===s)){
-        showDashboard(s);
-        currentUser = s;
-      } else showSignin();
-    });
-
-    // store session currentUser when showing dashboard
-    const originalShowDashboard = showDashboard;
-    showDashboard = function(email){ sessionStorage.setItem('currentUser', email); originalShowDashboard(email); };
-
-  </script>
-</body>
-</html>
+  window.signupHandler=function(form){
+    const name=form.name.value.trim();
+    const email=form.email.value.trim().toLowerCase();
+    const pwd=form.password.value;
+    if(accounts.some(a=>a.email===email)){alert('Email already registered. Please sign in.'); showSignin(); return;}
+    accounts.push({name,email,password:pwd,plan:'Free',created:new Date().toISOString()});
+    localStorage.setItem(ACC_KEY,JSON
