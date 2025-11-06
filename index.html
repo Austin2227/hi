@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sign In / Sign Up / Dashboard</title>
+<title>GitHub Auth Dashboard Part 1</title>
 <style>
 body{font-family:sans-serif;background:#f3f7fb;margin:0;padding:0;color:#0f1724;}
 .container{display:flex;justify-content:center;align-items:center;min-height:100vh;}
@@ -15,22 +15,11 @@ input, select{padding:12px;border-radius:10px;border:1px solid #e6eef6;font-size
 button{padding:12px;border-radius:10px;border:none;background:#2563eb;color:white;font-weight:700;cursor:pointer;}
 .link{color:#2563eb;cursor:pointer;text-decoration:underline;text-align:center;display:block;margin-top:12px;}
 .error{color:#ef4444;text-align:center;font-size:14px;}
-.dashboard{display:none;flex-direction:column;padding:28px;min-height:100vh;background:#f8fafc;}
-.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
-.brand{display:flex;align-items:center;gap:12px;}
-.logo{width:44px;height:44px;border-radius:10px;background:#2563eb;display:flex;align-items:center;justify-content:center;color:white;font-weight:800;}
-.welcome{font-size:18px;font-weight:700;}
-.card-dash{background:white;padding:20px;border-radius:12px;box-shadow:0 8px 30px rgba(16,24,40,0.08);margin-top:18px;}
-.small{font-size:13px;color:#6b7280;}
-.modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:none;align-items:center;justify-content:center;padding:20px;}
-.modal{background:white;padding:18px;border-radius:12px;max-width:520px;width:100%;box-shadow:0 8px 30px rgba(16,24,40,0.08);}
 </style>
 </head>
 <body>
 
-<!-- Sign In / Sign Up Stage -->
 <div id="authStage" class="container">
-  <!-- Sign In Card -->
   <div class="card" id="signinCard">
     <h2>Sign In</h2>
     <p class="muted">Use your Gmail to sign in.</p>
@@ -43,7 +32,6 @@ button{padding:12px;border-radius:10px;border:none;background:#2563eb;color:whit
     <span class="link" onclick="showSignup()">Don't have an account? Sign Up</span>
   </div>
 
-  <!-- Sign Up Card -->
   <div class="card" id="signupCard" style="display:none;">
     <h2>Create Account</h2>
     <p class="muted">Choose a plan and create your account.</p>
@@ -63,26 +51,6 @@ button{padding:12px;border-radius:10px;border:none;background:#2563eb;color:whit
   </div>
 </div>
 
-<!-- Dashboard -->
-<div class="dashboard" id="dashboard">
-  <div class="topbar">
-    <div class="brand">
-      <div class="logo">AS</div>
-      <div>
-        <div class="welcome" id="dashWelcome">Welcome, User!</div>
-        <div class="small" id="dashEmail">user@example.com</div>
-      </div>
-    </div>
-    <button onclick="logout()">Logout</button>
-  </div>
-  <div class="card-dash">
-    <h3 id="profileName">User Name</h3>
-    <p class="small" id="profileEmail">user@example.com</p>
-    <p class="small">Plan: <span id="profilePlan">Free</span></p>
-    <p class="small">Member since: <span id="profileSince">-</span></p>
-  </div>
-</div>
-
 <script>
 document.addEventListener('DOMContentLoaded',()=>{
   const ACC_KEY='demo_accounts';
@@ -98,15 +66,12 @@ document.addEventListener('DOMContentLoaded',()=>{
   const signinCard=document.getElementById('signinCard');
   const signupCard=document.getElementById('signupCard');
   const authStage=document.getElementById('authStage');
-  const dashboard=document.getElementById('dashboard');
   const signinError=document.getElementById('signinError');
   const signupMsg=document.getElementById('signupMsg');
 
   let currentUser=sessionStorage.getItem('currentUser');
   if(currentUser && accounts.some(a=>a.email===currentUser)){
-    authStage.style.display='none';
-    dashboard.style.display='flex';
-    renderDashboard(accounts.find(a=>a.email===currentUser));
+    // Dashboard will handle showing next
   }
 
   window.showSignin=()=>{
@@ -131,9 +96,8 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(acc.password!==pwd){signinError.textContent='Incorrect password.'; return;}
     currentUser=email;
     sessionStorage.setItem('currentUser',email);
-    authStage.style.display='none';
-    dashboard.style.display='flex';
-    renderDashboard(acc);
+    // Switch to dashboard handled in part 2
+    document.dispatchEvent(new Event('showDashboard'));
   }
 
   window.signupHandler=(form)=>{
@@ -148,24 +112,53 @@ document.addEventListener('DOMContentLoaded',()=>{
     setTimeout(showSignin,1500);
     form.reset();
   }
+});
+</script>
+<!-- Continue from Part 1 -->
+<div class="dashboard" id="dashboard" style="display:none;flex-direction:column;padding:28px;min-height:100vh;background:#f8fafc;">
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo">AS</div>
+      <div>
+        <div class="welcome" id="dashWelcome">Welcome, User!</div>
+        <div class="small" id="dashEmail">user@example.com</div>
+      </div>
+    </div>
+    <button onclick="logout()">Logout</button>
+  </div>
+  <div class="card-dash">
+    <h3 id="profileName">User Name</h3>
+    <p class="small" id="profileEmail">user@example.com</p>
+    <p class="small">Plan: <span id="profilePlan">Free</span></p>
+    <p class="small">Member since: <span id="profileSince">-</span></p>
+  </div>
+</div>
 
-  function renderDashboard(acc){
-    document.getElementById('dashWelcome').textContent=`Welcome, ${acc.name}!`;
-    document.getElementById('dashEmail').textContent=acc.email;
-    document.getElementById('profileName').textContent=acc.name;
-    document.getElementById('profileEmail').textContent=acc.email;
-    document.getElementById('profilePlan').textContent=acc.plan;
-    document.getElementById('profileSince').textContent=new Date(acc.created).toLocaleDateString();
-  }
+<script>
+document.addEventListener('showDashboard',()=>{
+  const dashboard=document.getElementById('dashboard');
+  const authStage=document.getElementById('authStage');
+  dashboard.style.display='flex';
+  authStage.style.display='none';
+
+  const ACC_KEY='demo_accounts';
+  let accounts=JSON.parse(localStorage.getItem(ACC_KEY)||'[]');
+  let currentUser=sessionStorage.getItem('currentUser');
+  const acc=accounts.find(a=>a.email===currentUser);
+
+  document.getElementById('dashWelcome').textContent=`Welcome, ${acc.name}!`;
+  document.getElementById('dashEmail').textContent=acc.email;
+  document.getElementById('profileName').textContent=acc.name;
+  document.getElementById('profileEmail').textContent=acc.email;
+  document.getElementById('profilePlan').textContent=acc.plan;
+  document.getElementById('profileSince').textContent=new Date(acc.created).toLocaleDateString();
 
   window.logout=()=>{
     sessionStorage.removeItem('currentUser');
     dashboard.style.display='none';
     authStage.style.display='flex';
-    showSignin();
   }
 });
 </script>
-
 </body>
 </html>
